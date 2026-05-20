@@ -1,0 +1,31 @@
+BEGIN { FS="\t"; }
+
+(NR==FNR) { keep[$1] = $1; }
+
+(NR!=FNR)&&(FNR==1) {
+    line = "";
+    for (i=1; i<=NF; i++) {
+	species = $i;
+	gsub("\"","",species)
+	if (species in keep) {
+	    keep_id[i+1] = i+1;
+	    line = line"\t"species;
+	}
+    }
+    gsub("^\t","",line);
+    print line;
+}
+
+(NR!=FNR)&&(FNR>1) {
+    species = $1;
+    gsub("\"","",species)
+    if (species in keep) {
+	line = species;
+	for (i=2; i<=NF; i++) {
+	    if (i in keep_id) {
+		line = line"\t"$i;
+	    }
+	}
+	print line;
+    }
+}

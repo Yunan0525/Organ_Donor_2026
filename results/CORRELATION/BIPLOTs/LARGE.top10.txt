@@ -1,0 +1,83 @@
+Homo sapiens	PHG1
+Toxoplasma gondii	PHG1
+Trypanosoma brucei	PHG1
+Bacteroides thetaiotaomicron	PHG2
+Saccharomyces cerevisiae	PHG2
+Parabacteroides merdae	PHG2
+Klebsiella pneumoniae	PHG2
+Botrytis cinerea	PHG2
+Aspergillus oryzae	PHG2
+Lactococcus lactis	PHG2
+Bacteroides salyersiae	PHG2
+Leishmania infantum	PHG2
+Polynucleobacter sp. MG-Unter2-18	PHG2
+Streptococcus lutetiensis	PHG3
+Enterococcus faecalis	PHG3
+Streptococcus infantarius	PHG3
+Bifidobacterium pseudocatenulatum	PHG3
+Bifidobacterium bifidum	PHG3
+Streptococcus equinus	PHG3
+Limosilactobacillus mucosae	PHG3
+Streptococcus gallolyticus	PHG3
+Methanobrevibacter smithii	PHG3
+Streptococcus pneumoniae	PHG3
+Bifidobacterium longum	PHG4
+Limosilactobacillus fermentum	PHG4
+Candida albicans	PHG4
+Staphylococcus aureus	PHG4
+Listeria monocytogenes	PHG4
+Bifidobacterium adolescentis	PHG4
+Erysipelotrichaceae bacterium 66202529	PHG4
+Mogibacterium diversum	PHG4
+Limosilactobacillus oris	PHG4
+Parvimonas micra	PHG4
+Escherichia coli	PHG5
+Thermothielavioides terrestris	PHG5
+Arachnia rubra	PHG5
+Citrobacter koseri	PHG5
+Clostridium sp. AWRP	PHG5
+Klebsiella michiganensis	PHG5
+Tepiditoga spiralis	PHG5
+Priestia aryabhattai	PHG5
+Klebsiella oxytoca	PHG5
+Plasmodium sp. gorilla clade G2	PHG5
+Collinsella aerofaciens	PHG6
+Streptococcus sp. HSISS1	PHG6
+Clostridium perfringens	PHG6
+Collinsella stercoris	PHG6
+Megasphaera massiliensis	PHG6
+Clostridiaceae bacterium Marseille-Q4149	PHG6
+Christensenella minuta	PHG6
+Streptococcus suis	PHG6
+Lacticaseibacillus paracasei	PHG6
+Clostridium neonatale	PHG6
+Anaerostipes hadrus	PHG7
+Ruminococcus sp. SR1/5	PHG7
+Blautia massiliensis	PHG7
+Blautia wexlerae	PHG7
+Streptococcus thermophilus	PHG7
+Blautia sp. SC05B48	PHG7
+Erysipelatoclostridium ramosum	PHG7
+Schaalia odontolytica	PHG7
+uncultured human fecal virus	PHG7
+Actinomyces graevenitzii	PHG7
+Oscillospiraceae bacterium	PHG8
+[Ruminococcus] torques	PHG8
+uncultured Clostridia bacterium	PHG8
+Dorea longicatena	PHG8
+[Clostridium] scindens	PHG8
+Enterococcus faecium	PHG8
+Coprococcus comes	PHG8
+Anaerobutyricum hallii	PHG8
+[Eubacterium] rectale	PHG8
+Blautia obeum	PHG8
+Eggerthella lenta	PHG9
+[Ruminococcus] gnavus	PHG9
+[Clostridium] innocuum	PHG9
+Enterocloster bolteae	PHG9
+Eubacterium callanderi	PHG9
+Parabacteroides distasonis	PHG9
+Phocaeicola dorei	PHG9
+Sellimonas intestinalis	PHG9
+Phocaeicola vulgatus	PHG9
+Bacteroides uniformis	PHG9

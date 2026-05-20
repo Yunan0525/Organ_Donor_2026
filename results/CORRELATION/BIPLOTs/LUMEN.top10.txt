@@ -1,0 +1,90 @@
+Homo sapiens	PHG1
+Toxoplasma gondii	PHG1
+Saccharomyces cerevisiae	PHG1
+Botrytis cinerea	PHG1
+Leishmania infantum	PHG1
+Trypanosoma brucei	PHG1
+Polynucleobacter sp. MG-Unter2-18	PHG1
+Legionella pneumophila	PHG1
+Granulibacter bethesdensis	PHG1
+Candida dubliniensis	PHG1
+Bifidobacterium longum	PHG2
+Candida albicans	PHG2
+Erysipelotrichaceae bacterium 66202529	PHG2
+Parabacteroides merdae	PHG2
+Gardnerella vaginalis	PHG2
+Klebsiella pneumoniae	PHG2
+Lacticaseibacillus rhamnosus	PHG2
+Aspergillus oryzae	PHG2
+Bacteroides salyersiae	PHG2
+Enterococcus faecalis	PHG2
+Ruminococcus sp. SR1/5	PHG3
+Blautia massiliensis	PHG3
+Anaerostipes hadrus	PHG3
+Streptococcus thermophilus	PHG3
+Blautia sp. SC05B48	PHG3
+Erysipelatoclostridium ramosum	PHG3
+Schaalia odontolytica	PHG3
+uncultured human fecal virus	PHG3
+Parvimonas micra	PHG3
+Actinomyces graevenitzii	PHG3
+Limosilactobacillus fermentum	PHG4
+Staphylococcus aureus	PHG4
+Listeria monocytogenes	PHG4
+Enterocloster bolteae	PHG4
+Candida tropicalis	PHG4
+Acidaminococcus intestini	PHG4
+Bifidobacterium adolescentis	PHG4
+Bacillus subtilis	PHG4
+Geobacillus zalihae	PHG4
+Bacillus cereus	PHG4
+[Ruminococcus] gnavus	PHG5
+Eggerthella lenta	PHG5
+[Clostridium] innocuum	PHG5
+Enterococcus faecium	PHG5
+Sellimonas intestinalis	PHG5
+Blautia sp. NBRC 113351	PHG5
+Clostridia bacterium UC5.1-1D4	PHG5
+Anaerostipes caccae	PHG5
+Ruthenibacterium lactatiformans	PHG5
+Bifidobacterium dentium	PHG5
+Blautia wexlerae	PHG6
+[Ruminococcus] torques	PHG6
+Collinsella aerofaciens	PHG6
+Dorea longicatena	PHG6
+Anaerobutyricum hallii	PHG6
+[Clostridium] scindens	PHG6
+Coprococcus comes	PHG6
+Streptococcus vestibularis	PHG6
+Streptococcus salivarius	PHG6
+Blautia obeum	PHG6
+Oscillospiraceae bacterium	PHG7
+uncultured Clostridia bacterium	PHG7
+[Eubacterium] rectale	PHG7
+Lachnospiraceae bacterium	PHG7
+Clostridioides difficile	PHG7
+Wansuia hejianensis	PHG7
+Lachnospiraceae bacterium GAM79	PHG7
+[Eubacterium] siraeum	PHG7
+[Clostridium] symbiosum	PHG7
+Blautia argi	PHG7
+Escherichia coli	PHG8
+Bacteroides thetaiotaomicron	PHG8
+Parabacteroides distasonis	PHG8
+Phocaeicola dorei	PHG8
+Faecalibacterium prausnitzii	PHG8
+Phocaeicola vulgatus	PHG8
+Bacteroides uniformis	PHG8
+Eubacterium callanderi	PHG8
+Bacteroides caccae	PHG8
+Alistipes onderdonkii	PHG8
+Mogibacterium diversum	PHG9
+Bacteroides stercoris	PHG9
+Bifidobacterium scardovii	PHG9
+Streptococcus mitis	PHG9
+Streptococcus intermedius	PHG9
+Limosilactobacillus oris	PHG9
+Lactiplantibacillus plantarum	PHG9
+Mogibacterium pumilum	PHG9
+Corynebacterium accolens	PHG9
+Corynebacterium segmentosum	PHG9

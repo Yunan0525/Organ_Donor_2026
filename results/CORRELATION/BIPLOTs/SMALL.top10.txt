@@ -1,0 +1,81 @@
+Homo sapiens	PHG1
+Toxoplasma gondii	PHG2
+Saccharomyces cerevisiae	PHG2
+Botrytis cinerea	PHG2
+Trypanosoma brucei	PHG2
+Polynucleobacter sp. MG-Unter2-18	PHG2
+Legionella pneumophila	PHG2
+Naumovozyma castellii	PHG2
+Granulibacter bethesdensis	PHG2
+Nocardia gipuzkoensis	PHG2
+Candida dubliniensis	PHG2
+Escherichia coli	PHG3
+Gardnerella vaginalis	PHG3
+Phocaeicola dorei	PHG3
+Shigella flexneri	PHG3
+Parabacteroides merdae	PHG3
+Salmonella enterica	PHG3
+Aspergillus oryzae	PHG3
+Candida tropicalis	PHG3
+Leishmania infantum	PHG3
+Lactiplantibacillus plantarum	PHG3
+Ruminococcus sp. SR1/5	PHG4
+Blautia massiliensis	PHG4
+Anaerostipes hadrus	PHG4
+Blautia sp. SC05B48	PHG4
+Streptococcus thermophilus	PHG4
+Erysipelatoclostridium ramosum	PHG4
+Schaalia odontolytica	PHG4
+Mogibacterium diversum	PHG4
+Streptococcus pneumoniae	PHG4
+Actinomyces pacaensis	PHG4
+Bifidobacterium longum	PHG5
+Erysipelotrichaceae bacterium 66202529	PHG5
+Enterocloster bolteae	PHG5
+Candida albicans	PHG5
+Limosilactobacillus fermentum	PHG5
+Eubacterium callanderi	PHG5
+Parabacteroides distasonis	PHG5
+Acidaminococcus intestini	PHG5
+Bacteroides thetaiotaomicron	PHG5
+Streptococcus lutetiensis	PHG5
+Faecalibacterium prausnitzii	PHG6
+Faecalibacterium sp. I2392	PHG6
+Faecalibacterium sp. I4384	PHG6
+Faecalibacterium sp. I4179	PHG6
+Faecalibacterium sp. IP118	PHG6
+Faecalibacterium sp. HTFF	PHG6
+Faecalibacterium sp. I3389	PHG6
+Faecalibacterium sp. I3333	PHG6
+Campylobacter coli	PHG6
+Bifidobacterium pullorum	PHG6
+Collinsella aerofaciens	PHG7
+Dorea longicatena	PHG7
+Staphylococcus aureus	PHG7
+[Clostridium] scindens	PHG7
+Streptococcus vestibularis	PHG7
+Streptococcus salivarius	PHG7
+Bifidobacterium breve	PHG7
+Adlercreutzia hattorii	PHG7
+Faecalibacterium sp. IP329	PHG7
+Adlercreutzia equolifaciens	PHG7
+[Ruminococcus] gnavus	PHG8
+Eggerthella lenta	PHG8
+[Clostridium] innocuum	PHG8
+Enterococcus faecium	PHG8
+Sellimonas intestinalis	PHG8
+Blautia sp. NBRC 113351	PHG8
+Clostridia bacterium UC5.1-1D4	PHG8
+Anaerostipes caccae	PHG8
+Bifidobacterium dentium	PHG8
+Ruthenibacterium lactatiformans	PHG8
+Oscillospiraceae bacterium	PHG9
+Blautia wexlerae	PHG9
+[Ruminococcus] torques	PHG9
+uncultured Clostridia bacterium	PHG9
+[Eubacterium] rectale	PHG9
+Anaerobutyricum hallii	PHG9
+Roseburia intestinalis	PHG9
+Coprococcus comes	PHG9
+uncultured human fecal virus	PHG9
+Blautia obeum	PHG9
