@@ -25,6 +25,7 @@ DFAST v1.2\
 DIAMOND v2.1\
 VSEARCH v2.22\
 VAMB v4.1\
+ResMiCo v1.2.2\
 QIIME2 2023.5\
 R v4.3
 
