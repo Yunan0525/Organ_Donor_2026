@@ -38,3 +38,6 @@ organ-donor-microbiome/
 │   └── CORRELATION/
 └── environment/
 ```
+# Citation
+
+If you use this repository, please cite the associated manuscript and relevant software resources.
