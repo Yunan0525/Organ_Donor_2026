@@ -6,7 +6,6 @@ This repository contains processed OTU/taxonomic abundance tables, sample metada
 
 The repository includes workflows for:
 
-- Quality control and preprocessing
 - Taxonomic profiling
 - Functional profiling
 - Antimicrobial resistance (AMR) analysis
@@ -29,7 +28,6 @@ organ-donor-microbiome/
 │   ├── scripts/
 │   └── README.md
 ├── results/
-│   ├── QC/
 │   ├── BRACKEN/
 │   ├── CARD/
 │   ├── HUMANN/
