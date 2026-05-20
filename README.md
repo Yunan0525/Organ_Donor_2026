@@ -19,7 +19,7 @@ The repository includes workflows for:
 # Repository Structure
 
 ```text
-organ-donor-microbiome/
+organ-donor-2026/
 ├── README.md
 ├── metadata/
 │   ├── sample_metadata.tsv
