@@ -13,16 +13,19 @@ Contains processed taxonomic abundance outputs generated using Kraken2 and Brack
 ## CARD/
 
 Contains antimicrobial resistance (AMR) profiling analyses based on the CARD database.
+
 ---
 
 ## CORE/
 
 Contains cohort-level intestinal core microbiome analyses.
+
 ---
 
 ## CORRELATIONS/
 
 Contains microbial ecological correlation analyses and community structure visualizations.
+
 ---
 
 ## ECS/
@@ -34,4 +37,5 @@ Contains enzyme functional profiling analyses based on EC annotations derived fr
 ## SYSTEMATICS/
 
 Contains phylogenetic and taxonomic visualization resources.
+
 ---
