@@ -1,0 +1,693 @@
+---
+title: "Untitled"
+output: html_document
+date: "2026-04-30"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+df <- read.table("summary.tsv", header=TRUE, sep="\t")
+
+# rename strains
+df$Strain <- recode(df$Strain,
+  "Bl-ODIWGS87" = "B. longum (Duodenum)",
+  "Bl-ODIWGS93" = "B. longum (Ascending colon)"
+)
+
+# order categories
+df$Category <- factor(df$Category, levels=c(
+  "Carbohydrate_metabolism",
+  "Transporters",
+  "Regulation",
+  "Mobile_elements",
+  "Stress_resistance",
+  "Adhesion_host_interaction"
+))
+df$Category <- recode(df$Category,
+  "Carbohydrate_metabolism" = "Carbohydrate metabolism",
+  "Transporters" = "Transporters",
+  "Regulation" = "Regulation",
+  "Mobile_elements" = "Mobile elements",
+  "Stress_resistance" = "Stress response",
+  "Adhesion_host_interaction" = "Host interaction"
+)
+# plot
+p1<-ggplot(df, aes(x=Category, y=Count, fill=Strain)) +
+  geom_bar(stat="identity", position=position_dodge(width=0.8)) +
+  
+  # pink / purple palette
+  scale_fill_manual(values=c(
+    "B. longum (Duodenum)" = "#E78AC3",      # soft pink
+    "B. longum (Ascending colon)" = "#8DA0CB" # soft purple-blue
+  )) +
+  
+  theme_bw(base_size = 12) +
+  theme(
+    axis.text.x = element_text(angle=45, hjust=1),
+    legend.title = element_blank(),
+    plot.title = element_text(hjust=0.5)
+  ) +
+  
+  labs(
+    title="Strain-specific functional differences",
+    y="Number of unique genes",
+    x=""
+  )
+
+p1
+ggsave("unique_gene_two_Bifido.png", plot=p1, dpi=600)
+```
+* proportion
+Because total unique genes differ (279 vs 301), normalize
+```{r}
+df <- df %>%
+  group_by(Strain) %>%
+  mutate(prop = Count / sum(Count))
+
+ggplot(df, aes(x=Category, y=prop, fill=Strain)) +
+  geom_bar(stat="identity", position="dodge") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle=45, hjust=1)) +
+  labs(title="Relative functional composition of unique genes",
+       y="Proportion",
+       x="")
+```
+```{r}
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+
+df <- read.table("summary.tsv", header=TRUE, sep="\t")
+
+# rename strains
+df$Strain <- recode(df$Strain,
+  "Bl-ODIWGS87" = "B. longum (Duodenum)",
+  "Bl-ODIWGS93" = "B. longum (Ascending colon)"
+)
+
+# rename categories
+df$Category <- recode(df$Category,
+  "Carbohydrate_metabolism" = "Carbohydrate metabolism",
+  "Transporters" = "Transporters",
+  "Regulation" = "Regulation",
+  "Mobile_elements" = "Mobile elements",
+  "Stress_resistance" = "Stress response",
+  "Adhesion_host_interaction" = "Host interaction"
+)
+
+# reshape
+df_wide <- df %>%
+  select(Strain, Category, Count) %>%
+  pivot_wider(names_from = Strain, values_from = Count)
+
+# compute difference
+df_wide$diff <- df_wide$`B. longum (Duodenum)` - df_wide$`B. longum (Ascending colon)`
+
+# remove no-difference categories
+df_wide <- df_wide %>%
+  filter(diff != 0)
+
+# direction
+df_wide$Direction <- ifelse(
+  df_wide$diff > 0,
+  "Duodenum enriched",
+  "Ascending colon enriched"
+)
+
+# reorder by magnitude
+df_wide <- df_wide %>%
+  arrange(desc(abs(diff))) %>%
+  mutate(Category = factor(Category, levels = Category))
+
+# plot
+p2 <- ggplot(df_wide, aes(x = Category, y = diff, fill = Direction)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  scale_fill_manual(
+    values = c(
+      "Duodenum enriched" = "#E78AC3",
+      "Ascending colon enriched" = "#8DA0CB"
+    )
+  ) +
+  theme_bw() +
+  theme(
+    legend.title = element_blank()
+  ) +
+  labs(
+    y = "Difference in number of unique genes\n(Duodenum - Ascending colon)",
+    x = ""
+  )
+
+p2
+
+ggsave("bar_difference_two_bifido.png", plot = p2, dpi = 600, width = 6, height = 4)
+```
+
+# pan genome
+```{r}
+library(ggplot2)
+library(dplyr)
+
+df <- read.table(
+  "pangenome_status.tsv",
+  sep = "\t",
+  header = FALSE,
+  col.names = c("Gene", "Strain", "Status")
+)
+
+df$Strain <- recode(df$Strain,
+  "Bl-ODIWGS87" = "B. longum (Duodenum)",
+  "Bl-ODIWGS93" = "B. longum (Ascending colon)"
+)
+
+ggplot(df, aes(x = Gene, y = Strain, fill = Status)) +
+  geom_tile() +
+  scale_fill_manual(values = c(
+    "shared" = "#D9D9D9",
+    "unique" = "#D81B60"
+  )) +
+  theme_bw(base_size = 12) +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    legend.title = element_blank()
+  ) +
+  labs(
+    title = "Pan-genome presence/absence profile",
+    x = "Gene clusters",
+    y = ""
+  )
+```
+```{r}
+library(ggplot2)
+library(dplyr)
+
+
+d1 <- read.table(
+  file.path("Bl-ODIWGS87.unique_gene_coordinates.tsv"),
+  sep = "\t", header = FALSE,
+  col.names = c("Contig", "Start", "End", "Strand", "Gene")
+)
+
+d2 <- read.table(
+  file.path("Bl-ODIWGS93.unique_gene_coordinates.tsv"),
+  sep = "\t", header = FALSE,
+  col.names = c("Contig", "Start", "End", "Strand", "Gene")
+)
+
+d1$Strain <- "B. longum (Duodenum)"
+d2$Strain <- "B. longum (Ascending colon)"
+
+df <- bind_rows(d1, d2)
+
+# keep only larger contigs to avoid too much clutter
+top_contigs <- df %>%
+  group_by(Strain, Contig) %>%
+  summarise(max_pos = max(End), n_unique = n(), .groups = "drop") %>%
+  group_by(Strain) %>%
+  slice_max(max_pos, n = 20)
+
+df_plot <- df %>%
+  inner_join(top_contigs, by = c("Strain", "Contig"))
+
+ggplot(df_plot, aes(x = Start, xend = End, y = Contig, yend = Contig)) +
+  geom_segment(linewidth = 2, color = "#D81B60") +
+  facet_wrap(~Strain, scales = "free_y") +
+  theme_bw(base_size = 12) +
+  theme(
+    strip.text = element_text(face = "italic"),
+    axis.text.y = element_text(size = 7)
+  ) +
+  labs(
+    title = "Distribution of strain-specific genes across assemblies",
+    x = "Genomic position",
+    y = "Contig"
+  )
+```
+# alignment 
+```{r}
+library(ggplot2)
+library(dplyr)
+library(readr)
+
+
+# unique genes
+u87 <- read.table(file.path( "Bl-ODIWGS87.unique_gene_coordinates.tsv"),
+                  sep="\t", header=FALSE,
+                  col.names=c("Contig","Start","End","Strand","Gene"))
+
+u93 <- read.table(file.path( "Bl-ODIWGS93.unique_gene_coordinates.tsv"),
+                  sep="\t", header=FALSE,
+                  col.names=c("Contig","Start","End","Strand","Gene"))
+
+u87$Strain <- "B. longum (Duodenum)"
+u93$Strain <- "B. longum (Ascending colon)"
+
+# contig lengths
+len87 <- read.table(file.path("Bl-ODIWGS87.contig_lengths.tsv"),
+                    header=FALSE, col.names=c("Contig","Length"))
+
+len93 <- read.table(file.path("Bl-ODIWGS93.contig_lengths.tsv"),
+                    header=FALSE, col.names=c("Contig","Length"))
+
+# keep top 8 contigs from each genome to avoid clutter
+top87 <- len87 %>% slice_max(Length, n=8)
+top93 <- len93 %>% slice_max(Length, n=8)
+
+u87p <- u87 %>% semi_join(top87, by="Contig")
+u93p <- u93 %>% semi_join(top93, by="Contig")
+
+# plot unique genes as segments on contigs
+p <- ggplot() +
+  geom_segment(
+    data=u87p,
+    aes(x=Start, xend=End, y=Contig, yend=Contig),
+    color="#D81B60",
+    linewidth=2
+  ) +
+  geom_segment(
+    data=u93p,
+    aes(x=Start, xend=End, y=Contig, yend=Contig),
+    color="#6A1B9A",
+    linewidth=2
+  ) +
+  facet_wrap(~Strain, scales="free_y") +
+  theme_bw(base_size=12) +
+  theme(
+    axis.text.y=element_text(size=7),
+    strip.text=element_text(face="italic"),
+    plot.title=element_text(hjust=0.5)
+  ) +
+  labs(
+    title="Strain-specific genes across aligned genome assemblies",
+    x="Genomic position",
+    y="Contig"
+  )
+
+p
+```
+* cirle
+```{r}
+library(circlize)
+library(dplyr)
+
+u87 <- read.table(
+  "Bl-ODIWGS87.unique_gene_coordinates.tsv",
+  sep = "\t", header = FALSE,
+  col.names = c("Contig", "Start", "End", "Strand", "Gene")
+)
+
+u93 <- read.table(
+  "Bl-ODIWGS93.unique_gene_coordinates.tsv",
+  sep = "\t", header = FALSE,
+  col.names = c("Contig", "Start", "End", "Strand", "Gene")
+)
+
+len87 <- read.table(
+  "Bl-ODIWGS87.contig_lengths.tsv",
+  header = FALSE,
+  col.names = c("Contig", "Length")
+)
+
+len93 <- read.table(
+  "Bl-ODIWGS93.contig_lengths.tsv",
+  header = FALSE,
+  col.names = c("Contig", "Length")
+)
+
+# keep top contigs to avoid overcrowding
+top87 <- len87 %>%
+  arrange(desc(Length)) %>%
+  slice(1:12) %>%
+  mutate(
+    Genome = "Duodenum",
+    Contig_short = paste0("D", row_number(), " (", round(Length / 1000, 1), " kb)")
+  )
+
+top93 <- len93 %>%
+  arrange(desc(Length)) %>%
+  slice(1:12) %>%
+  mutate(
+    Genome = "Ascending_colon",
+    Contig_short = paste0("AC", row_number(), " (", round(Length / 1000, 1), " kb)")
+  )
+
+u87 <- u87 %>% semi_join(top87, by = "Contig")
+u93 <- u93 %>% semi_join(top93, by = "Contig")
+
+len_all <- bind_rows(top87, top93) %>%
+  mutate(Sector = paste(Genome, Contig, sep = "|"))
+
+u87 <- u87 %>%
+  mutate(Sector = paste("Duodenum", Contig, sep = "|"))
+
+u93 <- u93 %>%
+  mutate(Sector = paste("Ascending_colon", Contig, sep = "|"))
+
+# map long contig names to clean labels
+contig_map <- setNames(len_all$Contig_short, len_all$Sector)
+
+circos.clear()
+circos.par(
+  start.degree = 90,
+  gap.degree = 1,
+  track.margin = c(0.01, 0.01)
+)
+
+circos.initialize(
+  factors = len_all$Sector,
+  xlim = cbind(rep(0, nrow(len_all)), len_all$Length)
+)
+
+# contig ring
+circos.trackPlotRegion(
+  ylim = c(0, 1),
+  panel.fun = function(x, y) {
+    sector <- CELL_META$sector.index
+    genome <- strsplit(sector, "\\|")[[1]][1]
+
+    col <- ifelse(genome == "Duodenum", "#F3C1D8", "#D8B4F8")
+
+    circos.rect(
+      CELL_META$xlim[1], 0.25,
+      CELL_META$xlim[2], 0.75,
+      col = col,
+      border = "grey40"
+    )
+
+    circos.text(
+      mean(CELL_META$xlim),
+      1.1,
+      contig_map[sector],
+      cex = 0.45,
+      facing = "clockwise",
+      niceFacing = TRUE
+    )
+  },
+  bg.border = NA
+)
+
+# unique genes: Duodenum
+for (i in seq_len(nrow(u87))) {
+  circos.rect(
+    sector.index = u87$Sector[i],
+    xleft = u87$Start[i],
+    xright = u87$End[i],
+    ybottom = 0.78,
+    ytop = 1.0,
+    col = "#D81B60",
+    border = NA
+  )
+}
+
+# unique genes: Ascending colon
+for (i in seq_len(nrow(u93))) {
+  circos.rect(
+    sector.index = u93$Sector[i],
+    xleft = u93$Start[i],
+    xright = u93$End[i],
+    ybottom = 0.00,
+    ytop = 0.22,
+    col = "#6A1B9A",
+    border = NA
+  )
+}
+
+title("Circular genome map of strain-specific genes")
+
+legend(
+  "bottomleft",
+  legend = c(
+    "B. longum (Duodenum)",
+    "B. longum (Ascending colon)",
+    "Duodenum-specific genes",
+    "Ascending-colon-specific genes"
+  ),
+  fill = c("#F3C1D8", "#D8B4F8", "#D81B60", "#6A1B9A"),
+  border = NA,
+  cex = 0.8
+)
+
+```
+
+# (used) circle alignent and unique gene for two strains
+```{r}
+library(circlize)
+library(dplyr)
+
+# -------------------------
+# Read files
+# -------------------------
+u87 <- read.table(
+  "Bl-ODIWGS87.unique_gene_coordinates.tsv",
+  sep="\t", header=FALSE,
+  col.names=c("Contig","Start","End","Strand","Gene")
+)
+
+u93 <- read.table(
+  "Bl-ODIWGS93.unique_gene_coordinates.tsv",
+  sep="\t", header=FALSE,
+  col.names=c("Contig","Start","End","Strand","Gene")
+)
+
+s87 <- read.table(
+  "Bl-ODIWGS87.shared_gene_coordinates.tsv",
+  sep="\t", header=FALSE,
+  col.names=c("Contig","Start","End","Strand","Gene")
+)
+
+s93 <- read.table(
+  "Bl-ODIWGS93.shared_gene_coordinates.tsv",
+  sep="\t", header=FALSE,
+  col.names=c("Contig","Start","End","Strand","Gene")
+)
+
+len87 <- read.table(
+  "Bl-ODIWGS87.contig_lengths.tsv",
+  header=FALSE,
+  col.names=c("Contig","Length")
+)
+
+len93 <- read.table(
+  "Bl-ODIWGS93.contig_lengths.tsv",
+  header=FALSE,
+  col.names=c("Contig","Length")
+)
+
+# -------------------------
+# Use one strain as reference sectors
+# Here: Ascending colon as outer/reference layout
+# -------------------------
+top93 <- len93 %>%
+  arrange(desc(Length)) %>%
+  slice(1:12) %>%
+  mutate(
+    Contig_short = paste0("AC", row_number(), " (", round(Length/1000, 1), " kb)")
+  )
+
+# Only show genes on top contigs
+u93p <- u93 %>% semi_join(top93, by="Contig")
+s93p <- s93 %>% semi_join(top93, by="Contig")
+
+# For duodenum, use its own top contigs as separate sectors
+top87 <- len87 %>%
+  arrange(desc(Length)) %>%
+  slice(1:12) %>%
+  mutate(
+    Contig_short = paste0("D", row_number(), " (", round(Length/1000, 1), " kb)")
+  )
+
+u87p <- u87 %>% semi_join(top87, by="Contig")
+s87p <- s87 %>% semi_join(top87, by="Contig")
+
+# Combine sectors from both genomes
+top93$Genome <- "Ascending_colon"
+top87$Genome <- "Duodenum"
+
+len_all <- bind_rows(top93, top87) %>%
+  mutate(Sector = paste(Genome, Contig, sep="|"))
+
+u93p$Sector <- paste("Ascending_colon", u93p$Contig, sep="|")
+s93p$Sector <- paste("Ascending_colon", s93p$Contig, sep="|")
+u87p$Sector <- paste("Duodenum", u87p$Contig, sep="|")
+s87p$Sector <- paste("Duodenum", s87p$Contig, sep="|")
+
+contig_map <- setNames(len_all$Contig_short, len_all$Sector)
+
+# -------------------------
+# Colors
+# -------------------------
+col_shared <- "#BDBDBD"      # shared genes
+col_duo_unique <- "#D81B60"  # duodenum unique
+col_col_unique <- "#6A1B9A"  # ascending colon unique
+col_duo_bg <- "#F3C1D8"
+col_col_bg <- "#D8B4F8"
+
+# -------------------------
+# Plot
+# -------------------------
+png(
+  "circular_genome_plot.png",
+  width = 7,
+  height = 7,
+  units = "in",
+  res = 600
+)
+
+par(mar = c(2, 2, 2, 6))  # extra space on right
+
+circos.clear()
+circos.par(
+  start.degree = 90,
+  gap.degree = 1,
+  track.margin = c(0.005, 0.005),
+  cell.padding = c(0, 0, 0, 0)
+)
+
+circos.initialize(
+  factors = len_all$Sector,
+  xlim = cbind(rep(0, nrow(len_all)), len_all$Length)
+)
+
+# Track 1: contig backbone
+circos.trackPlotRegion(
+  ylim = c(0, 1),
+  track.height = 0.08,
+  panel.fun = function(x, y) {
+    sector <- CELL_META$sector.index
+    genome <- strsplit(sector, "\\|")[[1]][1]
+
+    bg_col <- ifelse(genome == "Ascending_colon", col_col_bg, col_duo_bg)
+
+    circos.rect(
+      CELL_META$xlim[1], 0.25,
+      CELL_META$xlim[2], 0.75,
+      col = bg_col,
+      border = "grey40"
+    )
+
+    circos.text(
+      mean(CELL_META$xlim),
+      1.2,
+      contig_map[sector],
+      cex = 0.35,
+      facing = "clockwise",
+      niceFacing = TRUE
+    )
+  },
+  bg.border = NA
+)
+
+# Track 2: shared genes
+circos.trackPlotRegion(
+  ylim = c(0, 1),
+  track.height = 0.08,
+  panel.fun = function(x, y) {},
+  bg.border = NA
+)
+
+for (i in seq_len(nrow(s93p))) {
+  circos.rect(
+    sector.index = s93p$Sector[i],
+    xleft = s93p$Start[i],
+    xright = s93p$End[i],
+    ybottom = 0.15,
+    ytop = 0.85,
+    col = col_shared,
+    border = NA
+  )
+}
+
+for (i in seq_len(nrow(s87p))) {
+  circos.rect(
+    sector.index = s87p$Sector[i],
+    xleft = s87p$Start[i],
+    xright = s87p$End[i],
+    ybottom = 0.15,
+    ytop = 0.85,
+    col = col_shared,
+    border = NA
+  )
+}
+
+# Track 3: unique genes
+circos.trackPlotRegion(
+  ylim = c(0, 1),
+  track.height = 0.08,
+  panel.fun = function(x, y) {},
+  bg.border = NA
+)
+
+for (i in seq_len(nrow(u93p))) {
+  circos.rect(
+    sector.index = u93p$Sector[i],
+    xleft = u93p$Start[i],
+    xright = u93p$End[i],
+    ybottom = 0.15,
+    ytop = 0.85,
+    col = col_col_unique,
+    border = NA
+  )
+}
+
+for (i in seq_len(nrow(u87p))) {
+  circos.rect(
+    sector.index = u87p$Sector[i],
+    xleft = u87p$Start[i],
+    xright = u87p$End[i],
+    ybottom = 0.15,
+    ytop = 0.85,
+    col = col_duo_unique,
+    border = NA
+  )
+}
+
+title("Circular genome map of shared and strain-specific genes")
+
+dev.off()
+```
+* export legend
+```{r}
+png(
+  "legend_only.png",
+  width = 4000,   # increase width to avoid cropping
+  height = 1200,
+  res = 600
+)
+
+par(mar = c(0, 0, 0, 0), xpd = NA)
+plot.new()
+
+legend(
+  "center",
+  legend = c(
+    "Shared genes",
+    "Duodenum-specific genes",
+    "AscendingColon-specific genes",
+    "Duodenum strain contigs",
+    "AscendingColon strain contigs"
+  ),
+  fill = c(
+    col_shared,
+    col_duo_unique,
+    col_col_unique,
+    col_duo_bg,
+    col_col_bg
+  ),
+  ncol = 2,        # wrap into 2 columns (important)
+  border = NA,
+  cex = 1.2,
+  bty = "n"
+)
+
+dev.off()
+```
+
+
