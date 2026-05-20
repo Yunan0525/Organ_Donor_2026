@@ -26,7 +26,7 @@ DIAMOND v2.1\
 VSEARCH v2.22\
 VAMB v4.1\
 QIIME2 2023.5\
-R v4.3\
+R v4.3
 
 ## Computational platform
 
