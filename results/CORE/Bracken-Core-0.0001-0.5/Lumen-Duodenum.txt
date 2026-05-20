@@ -1,0 +1,15 @@
+Anaerostipes-hadrus
+Bifidobacterium-longum
+Blautia-wexlerae
+Eggerthella-lenta
+Escherichia-coli
+[Eubacterium]-rectale
+Homo-sapiens
+Limosilactobacillus-fermentum
+Oscillospiraceae-bacterium
+[Ruminococcus]-gnavus
+[Ruminococcus]-torques
+Saccharomyces-cerevisiae
+Staphylococcus-aureus
+Toxoplasma-gondii
+uncultured-Clostridia-bacterium

@@ -1,0 +1,11 @@
+Aspergillus-oryzae
+Botrytis-cinerea
+Candida-tropicalis
+Homo-sapiens
+Oscillospiraceae-bacterium
+Saccharomyces-cerevisiae
+Staphylococcus-aureus
+Streptococcus-pneumoniae
+Toxoplasma-gondii
+Trypanosoma-brucei
+uncultured-Clostridia-bacterium
