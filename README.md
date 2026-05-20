@@ -10,8 +10,8 @@ The repository includes workflows for:
 - Functional profiling
 - Antimicrobial resistance (AMR) analysis
 - Metagenomic assembly and annotation
-- Variant calling
 - Genome reconstruction and refinement
+- Correlation analysis (Ccrepe)
 - Visualization and downstream statistical analyses
 
 ---
