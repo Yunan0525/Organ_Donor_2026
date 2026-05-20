@@ -19,15 +19,14 @@ The repository includes workflows for:
 
 # Repository Structure
 
+```text
 organ-donor-microbiome/
 ├── README.md
 ├── metadata/
-│   ├── 220801_UNC41-A00434_0518_BHNJ5KDSX3-ODI.mapping.txt
+│   ├── sample_metadata.tsv
 │   └── README.md
-│
 ├── scripts/
-|   └── README.md
-│
+│   └── README.md
 ├── results/
 │   ├── QC/
 │   ├── BRACKEN/
@@ -37,5 +36,5 @@ organ-donor-microbiome/
 │   ├── ASSEMBLIES/
 │   ├── VARIANT_CALLING/
 │   └── CORE/
-│
 └── environment/
+```
