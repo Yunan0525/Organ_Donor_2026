@@ -1,0 +1,67 @@
+---
+title: "Untitled"
+output: html_document
+date: "2026-04-30"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(tidyverse)
+
+df <- read.csv("AMR.csv", stringsAsFactors = FALSE)
+
+# Rename for easier typing
+df <- df %>%
+  rename(
+    gene = CARD.Short.name,
+    segment = Tissue
+  )
+
+gene_mat <- df %>%
+  distinct(gene, segment) %>%          # remove duplicates
+  mutate(present = 1) %>%
+  pivot_wider(
+    names_from = segment,
+    values_from = present,
+    values_fill = 0
+  )
+
+gene_mat <- gene_mat %>%
+  mutate(degree = rowSums(across(-gene)))
+
+gene_mat <- gene_mat %>%
+  arrange(degree)   # from unique → core genes
+
+library(dplyr)
+library(UpSetR)
+
+segments <- c("Duodenum", "Jejunum", "Ileum",
+              "AscendingColon", "TransverseColon", "DescendingColon")
+
+gene_upset <- gene_mat %>%
+  select(all_of(segments)) %>%
+  mutate(across(everything(), ~ as.numeric(.))) %>%
+  as.data.frame()
+
+# make sure all columns are 0/1 numeric
+str(gene_upset)
+
+png("AMR_upset_plot.png",
+    width = 8, height = 5, units = "in", res = 600)
+
+UpSetR::upset(
+  gene_upset,
+  sets = segments,
+  keep.order = TRUE,
+  order.by = "freq",
+  nintersects = 40
+)
+
+dev.off()
+```
+
+

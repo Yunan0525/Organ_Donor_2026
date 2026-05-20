@@ -1,0 +1,7 @@
+"Tissue","antibiotic efflux","antibiotic inactivation","antibiotic target alteration","antibiotic target protection","antibiotic target replacement","reduced permeability to antibiotic"
+"Duodenum",148,44,43,54,14,3
+"Jejunum",74,20,16,16,2,1
+"Ileum",81,33,24,52,11,0
+"AscendingColon",133,60,38,70,14,3
+"TransverseColon",121,30,30,28,10,3
+"DescendingColon",167,51,48,81,14,5

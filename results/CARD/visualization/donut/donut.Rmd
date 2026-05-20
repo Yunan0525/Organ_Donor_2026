@@ -1,0 +1,66 @@
+---
+title: "Untitled"
+output: html_document
+date: "2026-04-30"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# donut plot data for prism
+* if a gene has multiple mechanisms, count for each mechanism once.
+use all genes, without filtering
+```{r}
+library(tidyverse)
+
+# read data
+amr <- read.csv("all_AMR.csv", check.names = FALSE)
+
+# define segment order (optional but recommended)
+segment_order <- c(
+  "Duodenum", "Jejunum", "Ileum",
+  "AscendingColon", "TransverseColon", "DescendingColon"
+)
+
+# ---- split multiple mechanisms ----
+amr_summary <- amr %>%
+  filter(!is.na(Tissue), !is.na(`Resistance Mechanism`)) %>%
+  separate_rows(`Resistance Mechanism`, sep = ";") %>%
+  mutate(
+    Tissue = factor(Tissue, levels = segment_order),
+    `Resistance Mechanism` = str_trim(`Resistance Mechanism`)
+  ) %>%
+  count(Tissue, `Resistance Mechanism`, name = "Gene_count") %>%
+  group_by(Tissue) %>%
+  mutate(
+    Total_mechanism_count = sum(Gene_count),
+    Percent = Gene_count / Total_mechanism_count * 100
+  ) %>%
+  ungroup()
+
+# ---- Prism input: counts (recommended) ----
+prism_counts <- amr_summary %>%
+  select(Tissue, `Resistance Mechanism`, Gene_count) %>%
+  pivot_wider(
+    names_from = `Resistance Mechanism`,
+    values_from = Gene_count,
+    values_fill = 0
+  )
+
+# ---- Prism input: percent (optional) ----
+prism_percent <- amr_summary %>%
+  select(Tissue, `Resistance Mechanism`, Percent) %>%
+  pivot_wider(
+    names_from = `Resistance Mechanism`,
+    values_from = Percent,
+    values_fill = 0
+  )
+
+# export
+write.csv(prism_counts, "Prism_AMR_mechanism_counts_ALL.csv", row.names = FALSE)
+write.csv(prism_percent, "Prism_AMR_mechanism_percent_ALL.csv", row.names = FALSE)
+```
+```
+
