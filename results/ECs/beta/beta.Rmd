@@ -1,0 +1,187 @@
+---
+title: "Untitled"
+output: html_document
+date: "2026-05-04"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+```{r}
+library(readr)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+library(pheatmap)
+library(forcats)
+
+library(scales)
+```
+
+```{r}
+library(readr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(vegan)
+library(pheatmap)
+
+# EC table
+ec <- read_tsv("ALL.ec-0-0.biom.txt")
+
+library(readr)
+library(dplyr)
+
+meta <- read_tsv("ALL.mapping 2.txt", show_col_types = FALSE)
+
+colnames(meta)[1] <- "SampleID"
+
+meta <- meta %>%
+  filter(SampleID != "#q2:types") %>%
+  select(SampleID, Donor, Milieu, Tissue, Section)
+
+library(dplyr)
+
+# keep OTUID (EC number)
+ec_rel <- ec
+
+# convert to relative abundance (column-wise normalization)
+ec_rel[,-1] <- sweep(ec[,-1], 2, colSums(ec[,-1], na.rm = TRUE), FUN = "/")
+```
+```{r}
+ec_long <- ec_rel %>%
+  pivot_longer(-OTUID, names_to = "SampleID", values_to = "Abundance")
+
+ec_meta <- ec_long %>%
+  left_join(meta, by = "SampleID")
+
+write.csv(ec_meta, "ec_merge.csv")
+```
+
+
+#
+```{r}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(vegan)
+library(pheatmap)
+library(tibble)
+library(forcats)
+
+dat <- read.csv("ec_merge.csv", check.names = FALSE)
+meta_cols <- c("number","OTUID","SampleID", "Abundance","Donor", "Milieu", "Tissue", "Section")
+
+ec_cols <- setdiff(colnames(dat), meta_cols)
+
+library(dplyr)
+library(tidyr)
+
+ec_wide <- dat %>%
+  select(SampleID, OTUID, Abundance) %>%
+  pivot_wider(
+    names_from = OTUID,
+    values_from = Abundance,
+    values_fill = 0
+  )
+
+meta <- dat %>%
+  select(SampleID, Donor, Milieu, Tissue, Section) %>%
+  distinct()
+
+ec_mat <- ec_wide %>%
+  select(-SampleID) %>%
+  as.matrix()
+
+rownames(ec_mat) <- ec_wide$SampleID
+```
+
+#pcoa
+```{r}
+library(vegan)
+
+bc_dist <- vegdist(ec_mat, method = "bray")
+
+pcoa <- cmdscale(bc_dist, k = 2)
+
+pcoa_df <- as.data.frame(pcoa)
+colnames(pcoa_df) <- c("PCoA1","PCoA2")
+pcoa_df$SampleID <- rownames(pcoa_df)
+
+pcoa_df <- left_join(pcoa_df, meta, by = "SampleID")
+
+library(ggplot2)
+
+ggplot(pcoa_df, aes(PCoA1, PCoA2, color = Tissue, shape = Milieu)) +
+  geom_point(size = 3, alpha = 0.8) +
+  stat_ellipse(aes(group = Tissue), linetype = 2) +
+  theme_classic(base_size = 14)
+```
+
+# stat
+* Tissue
+```{r}
+library(vegan)
+
+# PERMANOVA
+adonis_res <- adonis2(bc_dist ~ Tissue, data = meta)
+
+adonis_res
+```
+
+```{r}
+pval <- adonis_res$`Pr(>F)`[1]
+pval_label <- paste0("PERMANOVA between segments p = ", signif(pval, 2))
+
+library(viridis)
+floral_cols <- c(
+  "Duodenum"         = "#F4A7B9",
+  "Jejunum"          = "#F6C667",
+  "Ileum"            = "#7FC97F",
+  "AscendingColon"   = "#80B1D3",
+  "TransverseColon"  = "#B39DDB",
+  "DescendingColon"  = "#F781BF"
+)
+
+pcoa_df$Tissue <- factor(pcoa_df$Tissue,
+  levels = c("Duodenum","Jejunum","Ileum",
+             "AscendingColon","TransverseColon","DescendingColon"))
+
+library(ggplot2)
+library(viridis)
+
+p1<-ggplot(pcoa_df, aes(PCoA1, PCoA2, color = Tissue, shape = Milieu)) +
+  geom_point(size = 3.5, alpha = 0.9) +
+  stat_ellipse(aes(group = Tissue, color = Tissue),
+               linetype = 2, linewidth = 0.7) +
+  annotate(
+  "text",
+  x = Inf,
+  y = Inf,
+  label = pval_label,
+  hjust = 1.1,
+  vjust = 1.2,
+  size = 4.5
+) +
+  scale_color_manual(values = floral_cols, na.value = "grey70") +
+  labs(
+    x = "PCoA1",
+    y = "PCoA2",
+    color = "Segment",
+    shape = "Milieu"
+  ) +
+  theme_classic(base_size = 14) +
+  theme(
+    legend.position = "right",
+    axis.title = element_text(face = "bold"),
+    legend.title = element_text(face = "bold")
+  )
+p1
+ggsave("pcoa.png", plot=p1, dpi=600)
+```
+
