@@ -1,0 +1,10 @@
+ 1121  sh scripts/make-pheatmap.sh SMALL-MUCOSA.top10
+ 1122  emacs SMALL-LUMEN.bracken-5000-35.species.*
+ 1123  rm *~
+ 1124  sh scripts/make-pheatmap.sh SMALL-MUCOSA.bracken-5000-35.species
+ 1125  sh scripts/make-biplot.sh SMALL-MUCOSA.bracken-5000-35.species
+ 1126  sh scripts/make-biplot.sh SMALL-MUCOSA.bracken-5000-35
+ 1127  sh scripts/make-top10.sh SMALL-MUCOSA.bracken-5000-35
+ 1128  awk -f scripts/aux/score-top10-only.awk SMALL-MUCOSA.bracken-5000-35.top10.txt SMALL-MUCOSA.bracken-5000-35.species.score.txt > SMALL-MUCOSA.top10.score.txt
+ 1129  sh scripts/make-pheatmap.sh SMALL-MUCOSA.top10
+ 1130  history | tail > scripts/make-top10-biplot.sh

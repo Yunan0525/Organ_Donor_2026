@@ -1,0 +1,73 @@
+#!/bin/bash
+
+awk -f scripts/aux/make-species-mapping.awk $1.species.qvalue.txt > $1.species.mapping.txt-0
+
+mkdir -p ${1}.species.dist
+awk -f scripts/aux/make-distance-matrix.awk $1.species.score.txt > ${1}.species.dist/distance-matrix.tsv
+
+module add r/4.2.2
+Rscript scripts/R/hclust.R $1.species
+module rm r/4.2.2
+
+awk -f scripts/aux/add-clusters.awk -vLABEL="G" -vHEADER="Group" \
+    $1.species.clusters.txt $1.species.mapping.txt-0 > $1.species.mapping.txt-1
+
+awk -f scripts/aux/make-node-list.awk $1.species.dist/distance-matrix.tsv > $1.node-names.txt
+awk -f scripts/aux/make-network.awk $1.species.dist/distance-matrix.tsv > $1.network.txt
+
+java -cp LEIDEN/networkanalysis-1.3.0-1-g022e8e0.jar nl.cwts.networkanalysis.run.RunNetworkClustering \
+     -r 0.001 --randomness 0.05 -w -s 1 -i 10000 -o $1.clusters.txt $1.network.txt
+rm $1.network.txt
+
+awk -f scripts/aux/leiden-clusters-add-names.awk $1.node-names.txt $1.clusters.txt > $1.clusters+names.txt
+rm $1.clusters.txt $1.node-names.txt
+
+awk -f scripts/aux/add-clusters.awk -vLABEL="L" -vHEADER="Leiden" \
+    $1.clusters+names.txt $1.species.mapping.txt-1 > $1.species.mapping.txt-2
+rm $1.clusters+names.txt
+
+#awk -f scripts/aux/make-species-id.awk ../SYSTEMATICS/S.name-id.txt $1.species.mapping.txt-1 > S-${1}.name-id.txt
+
+#awk -f scripts/aux/make-species-table.awk ../SYSTEMATICS/nodes.dmp ../SYSTEMATICS/K.name-id.txt \
+#    ../SYSTEMATICS/P.name-id.txt ../SYSTEMATICS/C.name-id.txt ../SYSTEMATICS/O.name-id.txt \
+#    ../SYSTEMATICS/F.name-id.txt ../SYSTEMATICS/G.name-id.txt S-${1}.name-id.txt > S-${1}.table.txt
+
+#awk -f scripts/aux/add-full-taxa.awk S-${1}.table.txt $1.species.mapping.txt-2 > $1.species.mapping.txt
+#rm S-${1}.name-id.txt S-${1}.table.txt $1.species.mapping.txt-?
+
+#module add qiime2/2022.2
+#qiime tools import \
+#      --input-path $1.species.dist \
+#      --type 'DistanceMatrix' \
+#      --input-format  DistanceMatrixDirectoryFormat \
+#      --output-path ${1}-distance.qza
+
+#qiime diversity pcoa \
+#      --i-distance-matrix ${1}-distance.qza \
+#      --o-pcoa ${1}-pcoa.qza
+
+#qiime emperor plot \
+#      --i-pcoa ${1}-pcoa.qza \
+#      --m-metadata-file $1.species.mapping.txt \
+#      --o-visualization ${1}-emperor.qzv
+
+#j=0
+#for i in $@
+#do
+#    j=$((j+1))
+#    if [ $j -gt 1 ]
+#    then
+#
+#	qiime diversity beta-group-significance \
+#	      --i-distance-matrix ${1}-distance.qza \
+#	      --m-metadata-file $1.species.mapping.txt \
+#	      --m-metadata-column $i \
+#	      --o-visualization ${1}.species-$i-significance.qzv \
+#	      --p-pairwise
+#
+#    fi
+#done
+module rm qiime2/2022.2
+
+rm ${1}-pcoa.qza ${1}-distance.qza
+
