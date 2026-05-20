@@ -22,16 +22,11 @@ The repository includes workflows for:
 organ-donor-microbiome/
 ├── README.md
 ├── metadata/
-│   ├── sample_metadata.tsv
+│   ├── 220801_UNC41-A00434_0518_BHNJ5KDSX3-ODI.mapping.txt
 │   └── README.md
 │
 ├── scripts/
-│   ├── preprocessing/
-│   ├── assembly/
-│   ├── functional/
-│   ├── amr/
-│   ├── variant_calling/
-│   └── visualization/
+|   └── README.md
 │
 ├── results/
 │   ├── QC/
