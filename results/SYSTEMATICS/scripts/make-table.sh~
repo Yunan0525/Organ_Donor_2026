@@ -1,0 +1,3 @@
+#!/bin/bash
+
+awk -f scripts/aux/make-table.awk nodes.dmp K.name-id.txt P.name-id.txt C.name-id.txt O.name-id.txt F.name-id.txt G.name-id.txt S-R1m.name-id.txt
