@@ -1,0 +1,22 @@
+# QC outputs
+*_fastqc.zip
+*_fastqc.html
+multiqc_data/
+
+# Large compressed files
+*.zip
+*.tar.gz
+
+# Alignment files
+*.bam
+*.sam
+
+# Sequencing files
+*.fastq
+*.fastq.gz
+
+# Logs
+*.log
+
+# Mac system files
+.DS_Store
