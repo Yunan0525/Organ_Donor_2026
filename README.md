@@ -33,6 +33,8 @@ organ-donor-microbiome/
 │   ├── CARD/
 │   ├── SYSTEMATICS/
 │   ├── ASSEMBLIES/
-│   └── CORE/
+│   ├── CORE/
+│   ├── ECs/
+│   └── CORRELATION/
 └── environment/
 ```
