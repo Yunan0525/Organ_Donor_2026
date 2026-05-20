@@ -33,7 +33,6 @@ organ-donor-microbiome/
 │   ├── CARD/
 │   ├── SYSTEMATICS/
 │   ├── ASSEMBLIES/
-│   ├── VARIANT_CALLING/
 │   └── CORE/
 └── environment/
 ```
