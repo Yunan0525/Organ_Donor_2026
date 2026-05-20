@@ -1,0 +1,268 @@
+---
+title: "Untitled"
+output: html_document
+date: "2026-05-01"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(tidyverse)
+library(vegan)
+
+# read data
+meta <- read_csv("mapping.csv")
+mat  <- read_csv("cazy_family_matrix.csv")
+
+# merge
+data <- meta %>%
+  left_join(mat, by = "FileBase")
+```
+
+
+```{r}
+cazy_cols <- grep("^(GH|GT|PL|CE|CBM|AA)", names(data), value = TRUE)
+data <- data %>%
+  mutate(
+    cazy_richness = rowSums(across(all_of(cazy_cols), ~ .x > 0), na.rm = TRUE),
+    total_hits = rowSums(across(all_of(cazy_cols)), na.rm = TRUE)
+  )
+```
+
+# between section
+
+## only keep three strains both has large and small intestine
+```{r}
+library(tidyverse)
+
+# find species that have BOTH sections
+valid_species <- data %>%
+  group_by(Species) %>%
+  summarise(n_section = n_distinct(Section)) %>%
+  filter(n_section == 2) %>%
+  pull(Species)
+
+# subset data
+data_sub <- data %>%
+  filter(Species %in% valid_species)
+
+long <- data_sub %>%
+  select(FileBase, Section, all_of(cazy_cols)) %>%
+  pivot_longer(
+    cols = all_of(cazy_cols),
+    names_to = "CAZy",
+    values_to = "Count"
+  )
+
+res <- long %>%
+  group_by(CAZy) %>%
+  summarise(
+    large_mean = mean(Count[Section == "Large_intestine"], na.rm = TRUE),
+    small_mean = mean(Count[Section == "Small_intestine"], na.rm = TRUE),
+    p = tryCatch(
+      wilcox.test(Count ~ Section, exact = FALSE)$p.value,
+      error = function(e) NA_real_
+    ),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    diff = large_mean - small_mean,
+    p_adj = p.adjust(p, method = "BH")
+  ) %>%
+  arrange(desc(abs(diff)))
+```
+## each species seperate figure
+```{r}
+library(tidyverse)
+
+# species with both sections
+valid_species <- data %>%
+  group_by(Species) %>%
+  summarise(n_section = n_distinct(Section)) %>%
+  filter(n_section == 2) %>%
+  pull(Species)
+
+plot_one_species <- function(sp, data, cazy_cols) {
+  
+  df <- data %>% filter(Species == sp)
+  
+  long <- df %>%
+    select(FileBase, Section, all_of(cazy_cols)) %>%
+    pivot_longer(
+      cols = all_of(cazy_cols),
+      names_to = "CAZy",
+      values_to = "Count"
+    )
+  
+  res_sp <- long %>%
+    group_by(CAZy) %>%
+    summarise(
+      large_mean = mean(Count[Section == "Large_intestine"], na.rm = TRUE),
+      small_mean = mean(Count[Section == "Small_intestine"], na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    mutate(diff = large_mean - small_mean) %>%
+    filter(!(large_mean == 0 & small_mean == 0)) %>%
+    arrange(desc(abs(diff))) %>%
+    slice_head(n = 10)
+  
+  # important: use unique ordered CAZy names for this species only
+  cazy_order <- rev(res_sp$CAZy)
+  
+  plot_long_sp <- res_sp %>%
+    select(CAZy, large_mean, small_mean) %>%
+    pivot_longer(
+      cols = c(large_mean, small_mean),
+      names_to = "Section",
+      values_to = "Mean_count"
+    ) %>%
+    mutate(
+      Section = recode(
+        Section,
+        large_mean = "Large_intestine",
+        small_mean = "Small_intestine"
+      ),
+      CAZy = factor(CAZy, levels = cazy_order)
+    )
+  
+  ggplot(plot_long_sp, aes(x = CAZy, y = Mean_count, fill = Section)) +
+    geom_col(position = position_dodge(width = 0.75), width = 0.65) +
+    coord_flip() +
+    theme_bw() +
+    scale_fill_manual(values = c(
+      "Large_intestine" = "violet",
+      "Small_intestine" = "skyblue3"
+    )) +
+    labs(
+      x = NULL,
+      y = "Mean CAZyme count",
+      title = sp
+    )
+}
+plots <- lapply(valid_species, function(sp) {
+  plot_one_species(sp, data, cazy_cols)
+})
+
+names(plots) <- valid_species
+
+plots[[1]]
+plots[[2]]
+plots[[3]]
+
+dir.create("species_plots", showWarnings = FALSE)
+
+for (sp in names(plots)) {
+  ggsave(
+    filename = paste0("species_plots/", sp, "_cazy_section.png"),
+    plot = plots[[sp]],
+    width = 6,
+    height = 4,
+    dpi = 600
+  )
+}
+```
+# mucus vs lumen
+```{r}
+data$Milieu <- factor(data$Milieu, levels = c("Lumen", "Mucosa"))
+```
+
+## difference betwene melieu
+```{r}
+long <- data %>%
+  select(FileBase, Milieu, all_of(cazy_cols)) %>%
+  pivot_longer(cols = all_of(cazy_cols),
+               names_to = "CAZy",
+               values_to = "Count")
+
+res <- long %>%
+  group_by(CAZy) %>%
+  summarise(
+    mucosa_mean = mean(Count[Milieu == "Mucosa"]),
+    lumen_mean = mean(Count[Milieu == "Lumen"]),
+    p = wilcox.test(Count ~ Milieu)$p.value
+  ) %>%
+  mutate(
+    diff = mucosa_mean - lumen_mean,
+    p_adj = p.adjust(p, method = "BH")
+  ) %>%
+  arrange(p)
+
+head(res, 20)
+```
+
+## plot top different CAZYME
+top 10 mucus enriched
+top 5 lumen enriched
+```{r}
+library(tidyverse)
+mucosa_top <- res %>%
+  filter(diff > 0) %>%
+  arrange(desc(diff)) %>%
+  slice_head(n = 10)
+
+lumen_top <- res %>%
+  filter(diff < 0) %>%
+  arrange(diff) %>%   # most negative first
+  slice_head(n = 5)
+
+# choose top CAZymes by absolute difference
+plot_res <- bind_rows(mucosa_top, lumen_top) %>%
+  mutate(
+    Direction = case_when(
+      diff > 0 ~ "Mucosa-enriched",
+      diff < 0 ~ "Lumen-enriched"
+    )
+  )
+
+# convert to long format
+plot_long <- plot_res %>%
+  select(CAZy, mucosa_mean, lumen_mean, Direction, diff) %>%
+  pivot_longer(
+    cols = c(mucosa_mean, lumen_mean),
+    names_to = "Milieu",
+    values_to = "Mean_count"
+  ) %>%
+  mutate(
+    Milieu = recode(Milieu,
+                    mucosa_mean = "Mucosa",
+                    lumen_mean = "Lumen"),
+    CAZy = factor(CAZy, levels = plot_res$CAZy)
+  )
+# separator position (between top 10 and bottom 5)
+sep_line <- 10.5
+
+# label positions
+label_df <- data.frame(
+  x = c(-1, 3),  # adjust if needed
+  y = c(max(plot_long$Mean_count) * 1.1,
+        max(plot_long$Mean_count) * 1.1),
+  label = c("Mucosa-enriched", "Lumen-enriched")
+)
+p <- ggplot(plot_long, aes(x = CAZy, y = Mean_count, fill = Milieu)) +
+  geom_col(position = position_dodge(width = 0.75), width = 0.65) +
+  geom_vline(xintercept = 10.5, linetype = "dashed") +
+  annotate("text", x = 3,  y = max(plot_long$Mean_count) * 1.25,
+           label = "Mucosa-enriched", fontface = "bold", hjust = 0.5) +
+  annotate("text", x = 13, y = max(plot_long$Mean_count) * 1.25,
+           label = "Lumen-enriched", fontface = "bold", hjust = 0.5) +
+  coord_flip(clip = "off") +
+  expand_limits(y = max(plot_long$Mean_count) * 1.45) +
+  theme_bw() +
+  theme(
+    plot.margin = margin(10, 50, 10, 10),  # top, right, bottom, left
+    legend.position = "right"
+  ) +
+  scale_fill_manual(values = c("Mucosa" = "pink", "Lumen" = "#377EB8")) +
+  labs(
+    x = NULL,
+    y = "Mean CAZyme count",
+    title = "Top CAZyme families enriched in mucosa vs lumen"
+  )
+
+p
+
+ggsave("top cazyme between meileu.png", plot=p, dpi=600)
+```

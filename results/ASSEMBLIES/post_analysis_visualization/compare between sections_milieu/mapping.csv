@@ -1,0 +1,13 @@
+﻿Species,AssemblyMethod,Sample,N50,Donor,Milieu,Tissue,Section,FileBase
+Eggerthella-lenta,HYBRID,ODIWGS93,218469,OD1,Mucosa,AscendingColon,Large_intestine,El-ODIWGS93
+Eggerthella-lenta,HYBRID,ODIWGS89,114042,OD4,Lumen,Duodenum,Small_intestine,El-ODIWGS89
+Eggerthella-lenta,HYBRID,ODIWGS39,97060,OD9,Mucosa,AscendingColon,Large_intestine,El-ODIWGS39
+Escherichia-coli,DENOVO,ODIWGS68,143039,OD9,Mucosa,DescendingColon,Large_intestine,Ec-ODIWGS68
+Enterocloster-bolteae,HYBRID,ODIWGS18,106914,OD5,Mucosa,DescendingColon,Large_intestine,Eb-ODIWGS18
+Limosilactobacillus-fermentum,ALGN-ASM,ODIWGS47,99454,OD2,Lumen,TransverseColon,Large_intestine,Lf-ODIWGS47
+Bifidobacterium-longum,DENOVO,ODIWGS34,97461,OD7,Lumen,DescendingColon,Large_intestine,Bl-ODIWGS34
+Bifidobacterium-longum,HYBRID,ODIWGS72,92761,OD8,Lumen,Ileum,Small_intestine,Bl-ODIWGS72
+Bifidobacterium-longum,DENOVO,ODIWGS93,88986,OD1,Mucosa,AscendingColon,Large_intestine,Bl-ODIWGS93
+Bifidobacterium-longum,DENOVO,ODIWGS87,82727,OD1,Mucosa,Duodenum,Small_intestine,Bl-ODIWGS87
+Collinsella-aerofaciens,HYBRID,ODIWGS60,97068,OD2,Lumen,DescendingColon,Large_intestine,Ca-ODIWGS60
+Collinsella-aerofaciens,HYBRID,ODIWGS58,87976,OD9,Lumen,Duodenum,Small_intestine,Ca-ODIWGS58
