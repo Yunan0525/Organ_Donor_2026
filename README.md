@@ -28,9 +28,9 @@ organ-donor-microbiome/
 │   ├── scripts/
 │   └── README.md
 ├── results/
+│   ├── README.md
 │   ├── BRACKEN/
 │   ├── CARD/
-│   ├── HUMANN/
 │   ├── SYSTEMATICS/
 │   ├── ASSEMBLIES/
 │   ├── VARIANT_CALLING/
