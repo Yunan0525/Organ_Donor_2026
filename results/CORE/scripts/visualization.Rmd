@@ -1,0 +1,592 @@
+---
+title: "Untitled"
+output: html_document
+date: "2026-05-04"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+
+# -----------------------------
+# Input files
+# -----------------------------
+bracken_file <- "ALL.bracken.biom.txt"
+mapping_file <- "ALL.mapping.txt"
+
+ra_threshold <- 0.0001
+prev_threshold <- 0.50
+
+# -----------------------------
+# Read files
+# -----------------------------
+bracken <- read_tsv(bracken_file)
+mapping <- read_tsv(mapping_file)
+
+# Remove QIIME type row from mapping
+mapping <- mapping %>%
+  filter(`#SampleID` != "#q2:types") %>%
+  rename(SampleID = `#SampleID`)
+
+# -----------------------------
+# Convert Bracken counts to relative abundance
+# taxa rows, samples columns
+# -----------------------------
+bracken_ra <- bracken %>%
+  column_to_rownames("OTUID") %>%
+  as.matrix()
+
+bracken_ra <- sweep(bracken_ra, 2, colSums(bracken_ra, na.rm = TRUE), "/")
+
+bracken_ra_long <- bracken_ra %>%
+  as.data.frame() %>%
+  rownames_to_column("Taxon") %>%
+  pivot_longer(
+    cols = -Taxon,
+    names_to = "SampleID",
+    values_to = "RelativeAbundance"
+  )
+
+# -----------------------------
+# Merge with mapping
+# -----------------------------
+dat <- bracken_ra_long %>%
+  inner_join(
+    mapping %>% select(SampleID, Donor, Milieu, Tissue, Section),
+    by = "SampleID"
+  )
+
+# -----------------------------
+# Function to calculate core taxa
+# -----------------------------
+calculate_core <- function(data, section_name) {
+  
+  data %>%
+    filter(Section == section_name) %>%
+    group_by(Taxon) %>%
+    summarise(
+      n_samples = n(),
+      n_present = sum(RelativeAbundance > ra_threshold, na.rm = TRUE),
+      prevalence = n_present / n_samples,
+      mean_RA = mean(RelativeAbundance, na.rm = TRUE),
+      median_RA = median(RelativeAbundance, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    filter(prevalence >= prev_threshold) %>%
+    arrange(desc(prevalence), desc(mean_RA))
+}
+
+# -----------------------------
+# Calculate small and large intestine core
+# -----------------------------
+small_core <- calculate_core(dat, "Small_intestine")
+large_core <- calculate_core(dat, "Large_intestine")
+
+# -----------------------------
+# Save results
+# -----------------------------
+write_csv(small_core, "Small_intestine_core_RA0.0001_prev50.csv")
+write_csv(large_core, "Large_intestine_core_RA0.0001_prev50.csv")
+
+# Optional: taxa names only
+write_lines(small_core$Taxon, "Small_intestine_core_taxa_only.txt")
+write_lines(large_core$Taxon, "Large_intestine_core_taxa_only.txt")
+
+small_core
+large_core
+```
+# tissue core
+```{r}
+library(tidyverse)
+
+# -----------------------------
+# Input files
+# -----------------------------
+bracken_file <- "ALL.bracken.biom.txt"
+mapping_file <- "ALL.mapping.txt"
+
+ra_threshold <- 0.0001
+prev_threshold <- 0.50
+
+# -----------------------------
+# Read files
+# -----------------------------
+bracken <- read_tsv(bracken_file)
+mapping <- read_tsv(mapping_file)
+
+mapping <- mapping %>%
+  filter(`#SampleID` != "#q2:types") %>%
+  rename(SampleID = `#SampleID`)
+
+# -----------------------------
+# Convert counts to relative abundance
+# -----------------------------
+bracken_ra <- bracken %>%
+  column_to_rownames("OTUID") %>%
+  as.matrix()
+
+bracken_ra <- sweep(
+  bracken_ra,
+  2,
+  colSums(bracken_ra, na.rm = TRUE),
+  "/"
+)
+
+bracken_ra_long <- bracken_ra %>%
+  as.data.frame() %>%
+  rownames_to_column("Taxon") %>%
+  pivot_longer(
+    cols = -Taxon,
+    names_to = "SampleID",
+    values_to = "RelativeAbundance"
+  )
+
+# -----------------------------
+# Merge with mapping
+# -----------------------------
+dat <- bracken_ra_long %>%
+  inner_join(
+    mapping %>% select(SampleID, Donor, Milieu, Tissue, Section),
+    by = "SampleID"
+  )
+
+# -----------------------------
+# Calculate core taxa for each tissue
+# -----------------------------
+tissue_core <- dat %>%
+  group_by(Tissue, Taxon) %>%
+  summarise(
+    n_samples = n(),
+    n_present = sum(RelativeAbundance > ra_threshold, na.rm = TRUE),
+    prevalence = n_present / n_samples,
+    mean_RA = mean(RelativeAbundance, na.rm = TRUE),
+    median_RA = median(RelativeAbundance, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  filter(prevalence >= prev_threshold,
+    mean_RA >= ra_threshold) %>%
+  arrange(Tissue, desc(prevalence), desc(mean_RA))
+
+# -----------------------------
+# Save one combined file
+# -----------------------------
+write_csv(
+  tissue_core,
+  "Tissue_core_RA0.0001_prev50.csv"
+)
+
+# -----------------------------
+# Save taxa-only file for each tissue
+# -----------------------------
+dir.create("Tissue_core_taxa_only", showWarnings = FALSE)
+
+tissue_core %>%
+  group_by(Tissue) %>%
+  group_walk(~ {
+    write_lines(
+      .x$Taxon,
+      file.path(
+        "Tissue_core_taxa_only",
+        paste0(unique(.x$Tissue), "_core_taxa.txt")
+      )
+    )
+  })
+
+# View result
+tissue_core
+```
+
+# accessesory taxa
+between donors
+```{r}
+# -----------------------------
+# Calculate core taxa for each donor
+# -----------------------------
+donor_core <- dat %>%
+  group_by(Donor, Taxon) %>%
+  summarise(
+    n_samples = n(),
+    n_present = sum(RelativeAbundance >= ra_threshold, na.rm = TRUE),
+    prevalence = n_present / n_samples,
+    mean_RA = mean(RelativeAbundance, na.rm = TRUE),
+    median_RA = median(RelativeAbundance, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  filter(
+    prevalence >= prev_threshold,
+    mean_RA >= ra_threshold
+  ) %>%
+  arrange(Donor, desc(prevalence), desc(mean_RA))
+
+write_csv(donor_core, "Donor_core_RA0.0001_prev50.csv")
+
+donor_core_summary <- donor_core %>%
+  group_by(Donor) %>%
+  summarise(
+    n_core_taxa = n_distinct(Taxon),
+    .groups = "drop"
+  )
+
+donor_core_summary
+write_csv(donor_core_summary, "Donor_core_summary.csv")
+
+donor_accessory <- dat %>%
+  left_join(
+    donor_core %>%
+      select(Donor, Taxon) %>%
+      mutate(Community = "Core"),
+    by = c("Donor", "Taxon")
+  ) %>%
+  mutate(
+    Community = replace_na(Community, "Accessory"),
+    Present = RelativeAbundance >= ra_threshold
+  )
+
+donor_accessory_summary <- donor_accessory %>%
+  group_by(Donor, Community) %>%
+  summarise(
+    richness = n_distinct(Taxon[Present]),
+    total_RA = sum(RelativeAbundance, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  pivot_wider(
+    names_from = Community,
+    values_from = c(richness, total_RA),
+    values_fill = 0
+  )
+
+donor_accessory_summary
+write_csv(donor_accessory_summary, "Donor_core_accessory_summary.csv")
+```
+
+
+# caluclate cv and IQR of donor core taxa
+```{r}
+library(tidyverse)
+
+# -----------------------------
+# thresholds
+# -----------------------------
+ra_threshold <- 0.0001
+prev_threshold <- 0.50
+
+# -----------------------------
+# 1. Calculate prevalence + abundance across ALL samples
+# -----------------------------
+global_core_stats <- dat %>%
+  group_by(Taxon) %>%
+  summarise(
+    n_samples = n(),
+    n_present = sum(RelativeAbundance >= ra_threshold, na.rm = TRUE),
+    prevalence = n_present / n_samples,
+    mean_RA = mean(RelativeAbundance, na.rm = TRUE),
+    median_RA = median(RelativeAbundance, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# -----------------------------
+# 2. Define global core taxa
+# -----------------------------
+global_core_taxa <- global_core_stats %>%
+  filter(
+    prevalence >= prev_threshold,
+    mean_RA >= ra_threshold
+  ) %>%
+  arrange(desc(prevalence), desc(mean_RA))
+
+# -----------------------------
+# 3. Extract taxa names
+# -----------------------------
+core_taxa_list <- global_core_taxa$Taxon
+
+# -----------------------------
+# 4. Save results
+# -----------------------------
+write_csv(global_core_taxa, "Global_core_taxa_stats.csv")
+
+write_lines(
+  core_taxa_list,
+  "Global_core_taxa_list.txt"
+)
+
+# -----------------------------
+# 5. Quick check
+# -----------------------------
+nrow(global_core_taxa)
+
+core_presence_donor <- dat %>%
+  filter(Taxon %in% core_taxa_list,
+         RelativeAbundance >= ra_threshold) %>%
+  group_by(Taxon) %>%
+  summarise(
+    n_donors = n_distinct(Donor),
+    .groups = "drop"
+  )
+
+core_presence_donor
+
+# -----------------------------
+# 6. Calculate donor-level mean RA for global core taxa
+# -----------------------------
+donor_taxon_core <- dat %>%
+  filter(Taxon %in% core_taxa_list) %>%
+  group_by(Donor, Taxon) %>%
+  summarise(
+    donor_mean_RA = mean(RelativeAbundance, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# Check: each taxon should have multiple donors
+donor_taxon_core %>%
+  count(Taxon) %>%
+  arrange(n)
+
+# -----------------------------
+# 7. Calculate CV and IQR across donors
+# -----------------------------
+core_variation <- donor_taxon_core %>%
+  group_by(Taxon) %>%
+  summarise(
+    mean_RA = mean(donor_mean_RA, na.rm = TRUE),
+    sd_RA = sd(donor_mean_RA, na.rm = TRUE),
+    CV = if_else(mean_RA > 0, sd_RA / mean_RA, NA_real_),
+    median_RA = median(donor_mean_RA, na.rm = TRUE),
+    IQR_RA = IQR(donor_mean_RA, na.rm = TRUE),
+    n_donors = n_distinct(Donor),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(CV))
+
+core_variation
+
+write_csv(core_variation, "Global_core_taxa_CV_IQR_by_donor.csv")
+```
+# visualization
+
+```{r}
+library(tidyverse)
+
+# -----------------------------
+# Prepare plotting data
+# -----------------------------
+plot_dat <- donor_accessory_summary %>%
+  select(Donor, richness_Core, richness_Accessory) %>%
+  pivot_longer(
+    cols = c(richness_Core, richness_Accessory),
+    names_to = "Community",
+    values_to = "Taxa_number"
+  ) %>%
+  mutate(
+    Community = recode(
+      Community,
+      richness_Core = "Core taxa",
+      richness_Accessory = "Accessory taxa"
+    ),
+    Community = factor(
+      Community,
+      levels = c("Core taxa", "Accessory taxa")
+    )
+  )
+
+# -----------------------------
+# Floral colors
+# -----------------------------
+floral_colors <- c(
+  "Core taxa" = "#F4A7B9",
+  "Accessory taxa" = "#BFA2DB"
+)
+
+# -----------------------------
+# Plot with labels
+# -----------------------------
+p <- ggplot(plot_dat, aes(x = Donor, y = Taxa_number, fill = Community)) +
+  geom_col(width = 0.75, color = "black", linewidth = 0.2) +
+  
+  geom_text(
+    aes(label = Taxa_number),
+    position = position_stack(vjust = 0.5),
+    size = 4,
+    color = "black"
+  ) +
+  
+  scale_fill_manual(values = floral_colors) +
+  labs(
+    x = "Donor",
+    y = "Number of taxa",
+    fill = NULL
+  ) +
+  theme_classic(base_size = 14) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "right"
+  )
+
+p
+
+# -----------------------------
+# Save
+# -----------------------------
+ggsave(
+  "Donor_core_accessory_floral_labeled.png",
+  p,
+  width = 6,
+  height = 4,
+  dpi = 600
+)
+```
+
+## visulization for CV and IQR
+```{r}
+library(tidyverse)
+library(ggrepel)
+
+# -----------------------------
+# Classify CV into stability groups
+# -----------------------------
+core_variation_plot <- core_variation %>%
+  mutate(
+    CV_class = case_when(
+      CV < 0.5 ~ "Stable",
+      CV >= 0.5 & CV < 1 ~ "Moderate",
+      CV >= 1 & CV < 1.5 ~ "High",
+      CV >= 1.5 ~ "Extreme",
+      TRUE ~ NA_character_
+    ),
+    CV_class = factor(
+      CV_class,
+      levels = c("Stable", "Moderate", "High", "Extreme")
+    )
+  )
+
+# -----------------------------
+# Floral Prism-style colors
+# -----------------------------
+cv_colors <- c(
+  "Stable"   = "#B7D7A8",
+  "Moderate" = "#F7C6C7",
+  "High"     = "#F4A7B9",
+  "Extreme"  = "#BFA2DB"
+)
+
+# -----------------------------
+# Bubble plot: mean RA vs CV, bubble size = IQR
+
+
+# -----------------------------
+p_cv_iqr <- ggplot(
+  core_variation_plot,
+  aes(x = mean_RA, y = CV, size = IQR_RA, fill = CV_class)
+) +
+  geom_point(
+    shape = 21,
+    color = "black",
+    alpha = 0.85,
+    stroke = 0.3
+  ) +
+  scale_x_log10() +
+  scale_size_continuous(range = c(3, 12)) +
+  scale_fill_manual(values = cv_colors, drop = FALSE) +
+  labs(
+    x = "Mean relative abundance",
+    y = "Coefficient of variation (CV)",
+    size = "IQR",
+    fill = "CV class"
+  ) +
+  theme_classic(base_size = 14) +
+  theme(
+    legend.position = "right"
+  )
+
+p_cv_iqr
+
+label_dat <- core_variation_plot %>%
+  arrange(desc(CV)) %>%
+  slice_head(n = 10)
+
+p_cv_iqr_label <- p_cv_iqr +
+  geom_text_repel(
+    data = label_dat,
+    aes(label = Taxon),
+    size = 3.5,
+    max.overlaps = Inf
+  )
+
+p_cv_iqr_label
+
+ggsave(
+  "Core_taxa_CV_IQR_bubble_plot.png",
+ p_cv_iqr_label,
+  width = 7,
+  height = 5,
+  dpi = 600
+)
+```
+
+
+
+## dot plot
+```{r}
+library(tidyverse)
+
+segment_order <- c(
+  "Duodenum",
+  "Jejunum",
+  "Ileum",
+  "AscendingColon",
+  "TransverseColon",
+  "DescendingColon"
+)
+
+plot_dat <- tissue_core %>%
+  filter(
+    Tissue %in% segment_order,
+    Taxon != "Homo sapiens"
+  ) %>%
+  mutate(
+    Tissue = factor(Tissue, levels = segment_order),
+    Taxon = fct_reorder(Taxon, mean_RA, .fun = max)
+  )
+
+library(scales)
+
+library(scales)
+
+p_dot <- ggplot(plot_dat, aes(x = Tissue, y = Taxon, color = mean_RA)) +
+  geom_point(size = 4, alpha = 0.9) +
+  
+  scale_color_gradientn(
+    colors = c("#2C7BB6", "#FFFFBF", "#D7191C"),
+    trans = "log10",
+    
+    # your custom breaks
+    breaks = c(3e-02,1e-02, 3e-03, 1e-03, 3e-04),
+    
+    # 👇 force decimal display (no scientific notation)
+    labels = label_number(accuracy = 0.0001, trim = TRUE)
+  ) +
+  
+  labs(
+    x = "Intestinal segment",
+    y = "Core taxa",
+    color = "Mean RA"
+  ) +
+  theme_classic(base_size = 14) +
+  theme(
+    axis.text.y = element_text(size = 7),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "right"
+  )
+
+p_dot
+ggsave(
+  "Segment_core_taxa_dotplot_color.png",
+  p_dot,
+  width = 7,
+  height = 6,
+  dpi = 600
+)
+```
+
