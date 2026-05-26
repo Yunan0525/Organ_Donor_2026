@@ -1,0 +1,5 @@
+#!/bin/bash
+
+awk -f scripts/aux/species-list.awk ../$1.bracken-5000-20.species.mapping-2.txt ../$1.bracken-5000-20.biom.txt |\
+    grep $2 | sort -t$'\t' -grk 3 | cut -f 1-2 | head
+
