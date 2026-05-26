@@ -2,6 +2,10 @@
 
 This repository contains processed OTU/taxonomic abundance tables, sample metadata, and analysis scripts used for the organ donor gut microbiome study.
 
+# Data Availability
+
+The host-filtered shotgun metagenomic sequencing data, generated after removing *Homo sapiens*-derived reads from the raw FASTQ files, are available in the NCBI Sequence Read Archive (SRA) under BioProject accession **PRJNA1470551**.
+
 # Organ Donor Gut Microbiome Multi-Omics Analysis Pipeline
 
 The repository includes workflows for:
